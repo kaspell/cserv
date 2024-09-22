@@ -61,12 +61,6 @@ deregister_client(int id)
         return removed;
 }
 
-/* Broadcast a message to every client */
-void broadcast(char *s)
-{
-
-}
-
 void
 sendall(char *s)
 {
