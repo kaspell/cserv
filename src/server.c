@@ -108,8 +108,6 @@ serve_client(void *cliptr)
         sprintf(buffer_out, "%d exited the channel\n", client->id);
         sendall(buffer_out);
         remove_client(client);
-        sprintf(buffer_out, "The clicnt equals now %d \n", clicnt);
-        sendall(buffer_out);
         pthread_detach(pthread_self());
 
         return NULL;
