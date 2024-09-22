@@ -1,2 +1,2 @@
 # cserv
-A minimal chat server in C
+A minimal chat server written in C.
