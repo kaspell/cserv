@@ -20,8 +20,7 @@ Client *clients[MAX_CLIENTS];
 
 
 /* Add a client to the list of clients.
-   First confirm that the client ID is not already taken.
-   */
+   First confirm that the client ID is not already taken. */
 int
 add(Client *client)
 {
