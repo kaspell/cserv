@@ -26,7 +26,6 @@ typedef struct {
 
 static Client *clients[MAX_CLIENTS];
 static int last_id_in_use = -1;
-static _Atomic int clicnt = 0;
 
 
 Client *create_client(struct sockaddr_in cliaddr, int clifd, int id);

@@ -1,8 +1,8 @@
 #include "server.h"
 
-
 #define THROTTLE_LAG 1
 
+int clicnt = 0;
 socklen_t SOCKADDR_SZ = sizeof(struct sockaddr_in);
 
 

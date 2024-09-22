@@ -1,6 +1,7 @@
 #include "server.h"
 
 
+extern int clicnt;
 pthread_mutex_t cli_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
@@ -23,7 +24,9 @@ remove_client(Client *client)
         deregister_client(client->id);
         free(client);
         client = NULL;
-        --clicnt;
+        pthread_mutex_lock(&cli_mutex);
+        clicnt--;
+        pthread_mutex_unlock(&cli_mutex);
 }
 
 /* Add a client to the array of clients */
@@ -59,6 +62,11 @@ deregister_client(int id)
 }
 
 /* Broadcast a message to every client */
+void broadcast(char *s)
+{
+
+}
+
 void
 sendall(char *s)
 {
@@ -100,6 +108,8 @@ serve_client(void *cliptr)
         sprintf(buffer_out, "%d exited the channel\n", client->id);
         sendall(buffer_out);
         remove_client(client);
+        sprintf(buffer_out, "The clicnt equals now %d \n", clicnt);
+        sendall(buffer_out);
         pthread_detach(pthread_self());
 
         return NULL;
