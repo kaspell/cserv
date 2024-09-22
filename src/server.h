@@ -22,7 +22,7 @@ typedef struct {
         struct sockaddr_in addr;
 } Client;
 
-Client *clients[MAX_CLIENTS];
+static Client *clients[MAX_CLIENTS];
 
 
 void *client_interface(void *);

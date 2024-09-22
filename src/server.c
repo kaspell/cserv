@@ -11,7 +11,18 @@ create_client(struct sockaddr_in cliaddr, int clifd, int id)
         client->addr = cliaddr;
         client->fd = clifd;
         client->id = id;
+        register_client(client);
         return client;
+}
+
+void
+remove_client(Client *client)
+{
+        close(client->fd);
+        client->fd = -1;
+        deregister_client(client->id);
+        free(client);
+        client = NULL;
 }
 
 /* Add a client to the array of clients */
@@ -80,8 +91,7 @@ client_interface(void *cliptr)
 
                 if (!rbytes)
                         continue;
-
-                if ((rbytes == 4) && buffer_in[0] == 'e' && buffer_in[1] == 'x' && buffer_in[2] == 'i' && buffer_in[3] == 't')
+                else if ((rbytes >= 4) && buffer_in[0] == 'e' && buffer_in[1] == 'x' && buffer_in[2] == 'i' && buffer_in[3] == 't')
                         break;
                 else {
                         snprintf(buffer_out, sizeof(buffer_out), "[%d] %d: %s", (int)time(NULL), client->id, buffer_in);
@@ -91,13 +101,7 @@ client_interface(void *cliptr)
 
         sprintf(buffer_out, "%d exited the channel\n", client->id);
         sendall(buffer_out);
-
-        close(client->fd);
-        client->fd = -1;
-
-        deregister_client(client->id);
-        free(client);
-        client = NULL;
+        remove_client(client);
         pthread_detach(pthread_self());
 
         return NULL;
