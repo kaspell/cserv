@@ -23,6 +23,7 @@ remove_client(Client *client)
         deregister_client(client->id);
         free(client);
         client = NULL;
+        --clicnt;
 }
 
 /* Add a client to the array of clients */
@@ -64,18 +65,15 @@ sendall(char *s)
         pthread_mutex_lock(&cli_mutex);
         int nbytes = 0;
         for (int i=0; i<MAX_CLIENTS; i++)
-                if (clients[i]) {
-                        nbytes = write(clients[i]->fd, s, strlen(s));
-                        if (nbytes < 0) {
-                                perror("write");
-                                break;
-                        }
+                if (clients[i] && write(clients[i]->fd, s, strlen(s)) < 0) {
+                        perror("write");
+                        break;
                 }
         pthread_mutex_unlock(&cli_mutex);
 }
 
 void *
-client_interface(void *cliptr)
+serve_client(void *cliptr)
 {
         int rbytes = 0;
         char buffer_out[BUFFER_OUT_SZ];
@@ -105,4 +103,29 @@ client_interface(void *cliptr)
         pthread_detach(pthread_self());
 
         return NULL;
+}
+
+int
+setup_server(struct sockaddr_in *servaddr, int *svsock)
+{
+        *svsock = socket(AF_INET, SOCK_STREAM, 0);
+        if (*svsock < 0) {
+                perror("socket");
+                exit(EXIT_FAILURE); /* Socket creation failed */
+        }
+
+        servaddr->sin_family = AF_INET;
+        servaddr->sin_addr.s_addr = htonl(INADDR_ANY);
+        servaddr->sin_port = htons(PORT);
+
+        if (bind(*svsock, (struct sockaddr*)servaddr, sizeof(*servaddr)) < 0) {
+                perror("bind");
+                exit(EXIT_FAILURE);
+        }
+
+        if (listen(*svsock, QUEUE_LENGTH) < 0) {
+                perror("listen");
+                exit(EXIT_FAILURE);
+        }
+        return 1;
 }
