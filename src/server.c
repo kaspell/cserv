@@ -1,11 +1,22 @@
 #include "server.h"
 
 
-/* Add a client to the list of clients.
- * First confirm that the client ID is not already taken.
- */
+pthread_mutex_t cli_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+
+Client *
+create_client(struct sockaddr_in cliaddr, int clifd, int id)
+{
+        Client *client = (Client *) malloc(sizeof(Client));
+        client->addr = cliaddr;
+        client->fd = clifd;
+        client->id = id;
+        return client;
+}
+
+/* Add a client to the array of clients */
 int
-add_client(Client *client)
+register_client(Client *client)
 {
         pthread_mutex_lock(&cli_mutex);
         int added = 0;
@@ -19,8 +30,9 @@ add_client(Client *client)
         return added;
 }
 
+/* Remove a client from the array of clients */
 int
-remove_client(int id)
+deregister_client(int id)
 {
         pthread_mutex_lock(&cli_mutex);
         int removed = 0;
@@ -44,8 +56,7 @@ sendall(char *s)
                 if (clients[i]) {
                         nbytes = write(clients[i]->fd, s, strlen(s));
                         if (nbytes < 0) {
-                                printf("nbytes = %d", nbytes);
-                                perror("Sending message failed");
+                                perror("write");
                                 break;
                         }
                 }
@@ -84,7 +95,7 @@ client_interface(void *cliptr)
         close(client->fd);
         client->fd = -1;
 
-        remove_client(client->id);
+        deregister_client(client->id);
         free(client);
         client = NULL;
         pthread_detach(pthread_self());

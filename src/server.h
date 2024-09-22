@@ -3,6 +3,12 @@
 
 #include <netinet/in.h>
 #include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <time.h>
+#include <unistd.h>
 
 
 #define BUFFER_OUT_SZ 1024
@@ -18,12 +24,11 @@ typedef struct {
 
 Client *clients[MAX_CLIENTS];
 
-pthread_mutex_t cli_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-
-int add_client(Client *);
 void *client_interface(void *);
-int remove_client(int id);
+Client *create_client(struct sockaddr_in cliaddr, int clifd, int id);
+int deregister_client(int id);
+int register_client(Client *);
 void sendall(char *s);
 
 #endif
