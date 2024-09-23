@@ -13,6 +13,10 @@ main(int argc, char *argv[])
         struct sockaddr_in cliaddr, servaddr;
         pthread_t tid;
 
+        printf(" * Started server\n");
+        printf(" * Running on port %d\n", PORT);
+        fflush(stdout);
+
         setup_server(&servaddr, &svsock);
 
         while (1) {
@@ -28,7 +32,6 @@ main(int argc, char *argv[])
                 }
 
                 Client *client = create_client(cliaddr, clisock, ++last_id_in_use);
-                ++clicnt;
                 pthread_create(&tid, NULL, &serve_client, (void*)client);
         }
         return EXIT_SUCCESS;

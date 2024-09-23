@@ -13,6 +13,7 @@ create_client(struct sockaddr_in cliaddr, int clifd, int id)
         client->fd = clifd;
         client->id = id;
         register_client(client);
+        ++clicnt;
         return client;
 }
 
