@@ -1,32 +1,32 @@
 #include "server.h"
 
 
-extern int clicnt;
+extern int clcnt;
 pthread_mutex_t cli_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
 Client *
-create_client(struct sockaddr_in cliaddr, int clifd, int id)
+create_client(struct sockaddr_in cliaddr, int clsock, int id)
 {
         Client *client = (Client *) malloc(sizeof(Client));
         client->addr = cliaddr;
-        client->fd = clifd;
+        client->sock = clsock;
         client->id = id;
         register_client(client);
-        ++clicnt;
+        ++clcnt;
         return client;
 }
 
 void
 remove_client(Client *client)
 {
-        close(client->fd);
-        client->fd = -1;
+        close(client->sock);
+        client->sock = -1;
         deregister_client(client->id);
         free(client);
         client = NULL;
         pthread_mutex_lock(&cli_mutex);
-        clicnt--;
+        clcnt--;
         pthread_mutex_unlock(&cli_mutex);
 }
 
@@ -68,7 +68,7 @@ sendall(char *s)
         pthread_mutex_lock(&cli_mutex);
         int nbytes = 0;
         for (int i=0; i<MAX_CLIENTS; i++)
-                if (clients[i] && write(clients[i]->fd, s, strlen(s)) < 0) {
+                if (clients[i] && write(clients[i]->sock, s, strlen(s)) < 0) {
                         perror("write");
                         break;
                 }
@@ -86,7 +86,7 @@ serve_client(void *cliptr)
         sprintf(buffer_out, "%d joined the channel\n", client->id);
         sendall(buffer_out);
 
-        while ((rbytes = read(client->fd, buffer_in, sizeof(buffer_in)-1)) > 0) {
+        while ((rbytes = read(client->sock, buffer_in, sizeof(buffer_in)-1)) > 0) {
                 buffer_in[rbytes] = '\0';
                 buffer_out[0] = '\0';
 

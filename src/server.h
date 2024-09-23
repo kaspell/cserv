@@ -19,7 +19,7 @@
 #define QUEUE_LENGTH 16
 
 typedef struct {
-        int fd;
+        int sock;
         int id;
         struct sockaddr_in addr;
 } Client;
@@ -28,7 +28,7 @@ static Client *clients[MAX_CLIENTS];
 static int last_id_in_use = -1;
 
 
-Client *create_client(struct sockaddr_in cliaddr, int clifd, int id);
+Client *create_client(struct sockaddr_in cliaddr, int clsock, int id);
 int deregister_client(int id);
 int register_client(Client *);
 void sendall(char *s);
