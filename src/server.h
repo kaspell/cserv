@@ -14,7 +14,7 @@
 #define BUFFER_OUT_SZ 1024
 #define BUFFER_IN_SZ 1024
 #define ID_SZ 16
-#define MAX_CLIENTS 2
+#define MAX_CLIENTS 128
 #define PORT 5000
 #define QUEUE_LENGTH 16
 

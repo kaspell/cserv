@@ -12,8 +12,16 @@ create_client(struct sockaddr_in claddr, int clsock, int id)
         client->addr = claddr;
         client->sock = clsock;
         client->id = id;
-        register_client(client);
+
+        pthread_mutex_lock(&cli_mutex);
+        for (int i=0; i<MAX_CLIENTS; i++)
+                if (!clients[i]) {
+                        clients[i] = client;
+                        break;
+                }
         ++clcnt;
+        pthread_mutex_unlock(&cli_mutex);
+
         return client;
 }
 
@@ -22,45 +30,20 @@ remove_client(Client *client)
 {
         close(client->sock);
         client->sock = -1;
-        deregister_client(client->id);
-        free(client);
-        client = NULL;
+
         pthread_mutex_lock(&cli_mutex);
+        for (int i=0; i<MAX_CLIENTS; i++)
+                if (clients[i] && clients[i]->id == client->id) {
+                        clients[i] = 0;
+                        break;
+                }
         clcnt--;
         pthread_mutex_unlock(&cli_mutex);
+
+        free(client);
+        client = NULL;
 }
 
-/* Add a client to the array of clients */
-int
-register_client(Client *client)
-{
-        pthread_mutex_lock(&cli_mutex);
-        int added = 0;
-        for (int i=0; i<MAX_CLIENTS; i++)
-                if (!clients[i]) {
-                        clients[i] = client;
-                        added = 1;
-                        break;
-                }
-        pthread_mutex_unlock(&cli_mutex);
-        return added;
-}
-
-/* Remove a client from the array of clients */
-int
-deregister_client(int id)
-{
-        pthread_mutex_lock(&cli_mutex);
-        int removed = 0;
-        for (int i=0; i<MAX_CLIENTS; i++)
-                if (clients[i] && clients[i]->id == id) {
-                        clients[i] = 0;
-                        removed = 1;
-                        break;
-                }
-        pthread_mutex_unlock(&cli_mutex);
-        return removed;
-}
 
 void
 sendall(char *s)
