@@ -6,10 +6,10 @@ pthread_mutex_t cli_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
 Client *
-create_client(struct sockaddr_in cliaddr, int clsock, int id)
+create_client(struct sockaddr_in claddr, int clsock, int id)
 {
         Client *client = (Client *) malloc(sizeof(Client));
-        client->addr = cliaddr;
+        client->addr = claddr;
         client->sock = clsock;
         client->id = id;
         register_client(client);
@@ -66,7 +66,6 @@ void
 sendall(char *s)
 {
         pthread_mutex_lock(&cli_mutex);
-        int nbytes = 0;
         for (int i=0; i<MAX_CLIENTS; i++)
                 if (clients[i] && write(clients[i]->sock, s, strlen(s)) < 0) {
                         perror("write");
@@ -76,12 +75,12 @@ sendall(char *s)
 }
 
 void *
-serve_client(void *cliptr)
+serve_client(void *clptr)
 {
         int rbytes = 0;
         char buffer_out[BUFFER_OUT_SZ];
         char buffer_in[BUFFER_IN_SZ];
-        Client *client = (Client *) cliptr;
+        Client *client = (Client *) clptr;
 
         sprintf(buffer_out, "%d joined the channel\n", client->id);
         sendall(buffer_out);
@@ -109,7 +108,7 @@ serve_client(void *cliptr)
 }
 
 int
-setup_server(struct sockaddr_in *servaddr, int *svsock)
+setup_server(struct sockaddr_in *svaddr, int *svsock)
 {
         *svsock = socket(AF_INET, SOCK_STREAM, 0);
         if (*svsock < 0) {
@@ -117,11 +116,11 @@ setup_server(struct sockaddr_in *servaddr, int *svsock)
                 exit(EXIT_FAILURE); /* Socket creation failed */
         }
 
-        servaddr->sin_family = AF_INET;
-        servaddr->sin_addr.s_addr = htonl(INADDR_ANY);
-        servaddr->sin_port = htons(PORT);
+        svaddr->sin_family = AF_INET;
+        svaddr->sin_addr.s_addr = htonl(INADDR_ANY);
+        svaddr->sin_port = htons(PORT);
 
-        if (bind(*svsock, (struct sockaddr*)servaddr, sizeof(*servaddr)) < 0) {
+        if (bind(*svsock, (struct sockaddr*)svaddr, sizeof(*svaddr)) < 0) {
                 perror("bind");
                 exit(EXIT_FAILURE);
         }

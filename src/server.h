@@ -28,7 +28,7 @@ static Client *clients[MAX_CLIENTS];
 static int last_id_in_use = -1;
 
 
-Client *create_client(struct sockaddr_in cliaddr, int clsock, int id);
+Client *create_client(struct sockaddr_in claddr, int clsock, int id);
 int deregister_client(int id);
 int register_client(Client *);
 void sendall(char *s);

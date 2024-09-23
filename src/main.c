@@ -1,5 +1,6 @@
 #include "server.h"
 
+
 #define THROTTLE_LAG 1
 
 int clcnt = 0;
@@ -10,10 +11,10 @@ int
 main(int argc, char *argv[])
 {
         int clsock = 0, svsock = 0;
-        struct sockaddr_in cliaddr, servaddr;
+        struct sockaddr_in claddr, svaddr;
         pthread_t tid;
 
-        setup_server(&servaddr, &svsock);
+        setup_server(&svaddr, &svsock);
 
         printf(" * Started server\n");
         printf(" * Running on port %d\n", PORT);
@@ -21,7 +22,7 @@ main(int argc, char *argv[])
 
         while (1) {
                 sleep(THROTTLE_LAG);
-                clsock = accept(svsock, (struct sockaddr*)&cliaddr, (socklen_t*)&SOCKADDR_SZ);
+                clsock = accept(svsock, (struct sockaddr*)&claddr, (socklen_t*)&SOCKADDR_SZ);
                 if (clcnt >= MAX_CLIENTS) {
                         close(clsock);
                         continue;
@@ -31,7 +32,7 @@ main(int argc, char *argv[])
                         return EXIT_FAILURE;
                 }
 
-                Client *client = create_client(cliaddr, clsock, ++last_id_in_use);
+                Client *client = create_client(claddr, clsock, ++last_id_in_use);
                 pthread_create(&tid, NULL, &serve_client, (void*)client);
         }
         return EXIT_SUCCESS;
