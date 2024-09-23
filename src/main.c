@@ -13,11 +13,11 @@ main(int argc, char *argv[])
         struct sockaddr_in cliaddr, servaddr;
         pthread_t tid;
 
+        setup_server(&servaddr, &svsock);
+
         printf(" * Started server\n");
         printf(" * Running on port %d\n", PORT);
         fflush(stdout);
-
-        setup_server(&servaddr, &svsock);
 
         while (1) {
                 sleep(THROTTLE_LAG);
