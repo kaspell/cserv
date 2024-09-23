@@ -13,7 +13,6 @@
 
 #define BUFFER_OUT_SZ 1024
 #define BUFFER_IN_SZ 1024
-#define ID_SZ 16
 #define MAX_CLIENTS 128
 #define PORT 5000
 #define QUEUE_LENGTH 16
@@ -25,12 +24,11 @@ typedef struct {
 } Client;
 
 static Client *clients[MAX_CLIENTS];
-static int last_id_in_use = -1;
+extern int clcnt;
+extern int last_id_assigned;
 
 
-Client *create_client(struct sockaddr_in claddr, int clsock, int id);
-int deregister_client(int id);
-int register_client(Client *);
+Client *create_client(struct sockaddr_in claddr, int clsock);
 void sendall(char *s);
 void *serve_client(void *);
 int setup_server(struct sockaddr_in *, int *);

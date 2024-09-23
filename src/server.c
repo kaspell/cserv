@@ -2,16 +2,17 @@
 
 
 extern int clcnt;
+int last_id_assigned = -1;
 pthread_mutex_t cli_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
 Client *
-create_client(struct sockaddr_in claddr, int clsock, int id)
+create_client(struct sockaddr_in claddr, int clsock)
 {
         Client *client = (Client *) malloc(sizeof(Client));
         client->addr = claddr;
         client->sock = clsock;
-        client->id = id;
+        client->id = ++last_id_assigned;
 
         pthread_mutex_lock(&cli_mutex);
         for (int i=0; i<MAX_CLIENTS; i++)
@@ -96,7 +97,7 @@ setup_server(struct sockaddr_in *svaddr, int *svsock)
         *svsock = socket(AF_INET, SOCK_STREAM, 0);
         if (*svsock < 0) {
                 perror("socket");
-                exit(EXIT_FAILURE); /* Socket creation failed */
+                exit(EXIT_FAILURE);
         }
 
         svaddr->sin_family = AF_INET;

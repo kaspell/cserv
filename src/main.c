@@ -31,8 +31,7 @@ main(int argc, char *argv[])
                         perror("accept");
                         return EXIT_FAILURE;
                 }
-
-                Client *client = create_client(claddr, clsock, ++last_id_in_use);
+                Client *client = create_client(claddr, clsock);
                 pthread_create(&tid, NULL, &serve_client, (void*)client);
         }
         return EXIT_SUCCESS;
