@@ -94,8 +94,7 @@ serve_client(void *clptr)
 int
 setup_server(struct sockaddr_in *svaddr, int *svsock)
 {
-        *svsock = socket(AF_INET, SOCK_STREAM, 0);
-        if (*svsock < 0) {
+        if ((*svsock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
                 perror("socket");
                 exit(EXIT_FAILURE);
         }
