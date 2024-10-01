@@ -28,6 +28,7 @@ extern int clcnt;
 extern int top_id;
 
 
+int accept_client_connection(int *svsock, int *clsock, struct sockaddr_in *claddr, socklen_t *sockaddr_sz);
 Client *add_client(struct sockaddr_in claddr, int clsock);
 void sendall(char *s);
 void *serve_client(void *);

@@ -16,20 +16,10 @@ main(int argc, char *argv[])
 
         setup_server(&svaddr, &svsock);
 
-        printf(" * Started server\n");
-        printf(" * Running on port %d\n", PORT);
-        fflush(stdout);
-
         while (1) {
                 sleep(THROTTLE_LAG);
-                if ((clsock = accept(svsock, (struct sockaddr*)&claddr, (socklen_t*)&SOCKADDR_SZ)) < 0) {
-                        perror("accept");
-                        return EXIT_FAILURE;
-                } else if (clcnt >= MAX_CLIENTS) {
-                        close(clsock);
-                        clsock = 0;
+                if (accept_client_connection(&svsock, &clsock, &claddr, &SOCKADDR_SZ) < 0)
                         continue;
-                }
                 Client *client = add_client(claddr, clsock);
                 pthread_create(&tid, NULL, &serve_client, (void*)client);
         }

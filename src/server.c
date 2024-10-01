@@ -6,6 +6,20 @@ int top_id = -1;
 pthread_mutex_t cli_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
+int
+accept_client_connection(int *svsock, int *clsock, struct sockaddr_in *claddr, socklen_t *sockaddr_sz)
+{
+        if ((*clsock = accept(*svsock, (struct sockaddr*)claddr, (socklen_t*)sockaddr_sz)) < 0) {
+                perror("accept");
+                exit(EXIT_FAILURE);
+        } else if (clcnt >= MAX_CLIENTS) {
+                close(*clsock);
+                *clsock = 0;
+                return -1;
+        }
+        return 0;
+}
+
 Client *
 add_client(struct sockaddr_in claddr, int clsock)
 {
@@ -14,15 +28,12 @@ add_client(struct sockaddr_in claddr, int clsock)
         client->sock = clsock;
         client->id = ++top_id;
 
-        pthread_mutex_lock(&cli_mutex);
         for (int i=0; i<MAX_CLIENTS; i++)
                 if (!clients[i]) {
                         clients[i] = client;
                         ++clcnt;
                         break;
                 }
-        pthread_mutex_unlock(&cli_mutex);
-
         return client;
 }
 
@@ -70,19 +81,16 @@ serve_client(void *clptr)
         sendall(buffer_out);
 
         while ((rbytes = read(client->sock, buffer_in, sizeof(buffer_in)-1)) > 0) {
-                buffer_in[rbytes] = '\0';
-                buffer_out[0] = '\0';
-
+                buffer_in[rbytes] = buffer_out[0] = '\0';
                 if (!rbytes)
                         continue;
-                else if ((rbytes >= 4) && buffer_in[0] == 'e' && buffer_in[1] == 'x' && buffer_in[2] == 'i' && buffer_in[3] == 't')
+                else if ((rbytes >= 4) && !strncmp(buffer_in, "exit", 4))
                         break;
                 else {
                         snprintf(buffer_out, sizeof(buffer_out), "[%d] %d: %s", (int)time(NULL), client->id, buffer_in);
                         sendall(buffer_out);
                 }
         }
-
         sprintf(buffer_out, "%d exited the channel\n", client->id);
         sendall(buffer_out);
         remove_client(client);
@@ -107,10 +115,12 @@ setup_server(struct sockaddr_in *svaddr, int *svsock)
                 perror("bind");
                 exit(EXIT_FAILURE);
         }
-
         if (listen(*svsock, QUEUE_LENGTH) < 0) {
                 perror("listen");
                 exit(EXIT_FAILURE);
         }
+        printf(" * Started server\n");
+        printf(" * Running on port %d\n", PORT);
+        fflush(stdout);
         return 1;
 }
