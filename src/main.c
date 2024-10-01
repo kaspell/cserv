@@ -22,16 +22,15 @@ main(int argc, char *argv[])
 
         while (1) {
                 sleep(THROTTLE_LAG);
-                clsock = accept(svsock, (struct sockaddr*)&claddr, (socklen_t*)&SOCKADDR_SZ);
-                if (clcnt >= MAX_CLIENTS) {
-                        close(clsock);
-                        continue;
-                }
-                if (clsock < 0) {
+                if ((clsock = accept(svsock, (struct sockaddr*)&claddr, (socklen_t*)&SOCKADDR_SZ)) < 0) {
                         perror("accept");
                         return EXIT_FAILURE;
+                } else if (clcnt >= MAX_CLIENTS) {
+                        close(clsock);
+                        clsock = 0;
+                        continue;
                 }
-                Client *client = create_client(claddr, clsock);
+                Client *client = add_client(claddr, clsock);
                 pthread_create(&tid, NULL, &serve_client, (void*)client);
         }
         return EXIT_SUCCESS;

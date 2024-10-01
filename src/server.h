@@ -25,10 +25,10 @@ typedef struct {
 
 static Client *clients[MAX_CLIENTS];
 extern int clcnt;
-extern int last_id_assigned;
+extern int top_id;
 
 
-Client *create_client(struct sockaddr_in claddr, int clsock);
+Client *add_client(struct sockaddr_in claddr, int clsock);
 void sendall(char *s);
 void *serve_client(void *);
 int setup_server(struct sockaddr_in *, int *);

@@ -2,25 +2,25 @@
 
 
 extern int clcnt;
-int last_id_assigned = -1;
+int top_id = -1;
 pthread_mutex_t cli_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
 Client *
-create_client(struct sockaddr_in claddr, int clsock)
+add_client(struct sockaddr_in claddr, int clsock)
 {
         Client *client = (Client *) malloc(sizeof(Client));
         client->addr = claddr;
         client->sock = clsock;
-        client->id = ++last_id_assigned;
+        client->id = ++top_id;
 
         pthread_mutex_lock(&cli_mutex);
         for (int i=0; i<MAX_CLIENTS; i++)
                 if (!clients[i]) {
                         clients[i] = client;
+                        ++clcnt;
                         break;
                 }
-        ++clcnt;
         pthread_mutex_unlock(&cli_mutex);
 
         return client;
@@ -36,9 +36,9 @@ remove_client(Client *client)
         for (int i=0; i<MAX_CLIENTS; i++)
                 if (clients[i] && clients[i]->id == client->id) {
                         clients[i] = 0;
+                        --clcnt;
                         break;
                 }
-        clcnt--;
         pthread_mutex_unlock(&cli_mutex);
 
         free(client);
