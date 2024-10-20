@@ -14,18 +14,17 @@ int
 op_clcnt(Mode mode)
 {
         static int clcnt = 0;
-        int ret;
         switch (mode) {
                 case GET:
-                        ret = clcnt;
+                        return clcnt;
                 case INCREMENT:
                         ++clcnt;
-                        ret = -1;
+                        break;
                 case DECREMENT:
                         --clcnt;
-                        ret = -1;
+                        break;
         }
-        return ret;
+        return -1;
 }
 
 int
