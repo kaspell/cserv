@@ -45,8 +45,8 @@ manage_clcnt(Mode mode)
 static int
 next_id_to_assign()
 {
-        static int topid = -1;
-        return ++topid;
+        static int id = -1;
+        return ++id;
 }
 
 int
