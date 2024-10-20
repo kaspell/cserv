@@ -19,7 +19,7 @@ typedef enum {
 } Mode;
 
 int
-op_clcnt(Mode mode)
+manage_clcnt(Mode mode)
 {
         static int clcnt = 0;
         switch (mode) {
@@ -36,7 +36,7 @@ op_clcnt(Mode mode)
 }
 
 int
-get_id_to_assign()
+next_id_to_assign()
 {
         static int topid = -1;
         return ++topid;
@@ -48,7 +48,7 @@ accept_client_connection(int *svsock, int *clsock, struct sockaddr_in *claddr, s
         if ((*clsock = accept(*svsock, (struct sockaddr*)claddr, (socklen_t*)sockaddr_sz)) < 0) {
                 perror("accept");
                 exit(EXIT_FAILURE);
-        } else if (op_clcnt(GET) >= MAX_CLIENTS) {
+        } else if (manage_clcnt(GET) >= MAX_CLIENTS) {
                 close(*clsock);
                 *clsock = 0;
                 return -1;
@@ -62,13 +62,13 @@ add_client(struct sockaddr_in claddr, int clsock)
         Client *client = (Client *) malloc(sizeof(Client));
         client->addr = claddr;
         client->sock = clsock;
-        client->id = get_id_to_assign();
+        client->id = next_id_to_assign();
 
         for (int i=0; i<MAX_CLIENTS; i++)
                 if (!clients[i]) {
                         clients[i] = client;
                         pthread_mutex_lock(&cli_mutex);
-                        op_clcnt(INCREMENT);
+                        manage_clcnt(INCREMENT);
                         pthread_mutex_unlock(&cli_mutex);
                         break;
                 }
@@ -85,7 +85,7 @@ remove_client(Client *client)
         for (int i=0; i<MAX_CLIENTS; i++)
                 if (clients[i] && clients[i]->id == client->id) {
                         clients[i] = 0;
-                        op_clcnt(DECREMENT);
+                        manage_clcnt(DECREMENT);
                         break;
                 }
         pthread_mutex_unlock(&cli_mutex);
