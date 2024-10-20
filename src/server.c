@@ -25,7 +25,7 @@ typedef enum {
 } Mode;
 
 
-int
+static int
 manage_clcnt(Mode mode)
 {
         static int clcnt = 0;
@@ -42,7 +42,7 @@ manage_clcnt(Mode mode)
         return -1;
 }
 
-int
+static int
 next_id_to_assign()
 {
         static int topid = -1;
@@ -82,7 +82,7 @@ add_client(struct sockaddr_in claddr, int clsock)
         return client;
 }
 
-void
+static void
 remove_client(Client *client)
 {
         close(client->sock);
@@ -102,7 +102,7 @@ remove_client(Client *client)
 }
 
 
-void
+static void
 sendall(char *s)
 {
         pthread_mutex_lock(&cli_mutex);
