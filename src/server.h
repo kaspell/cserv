@@ -24,8 +24,6 @@ typedef struct {
 } Client;
 
 static Client *clients[MAX_CLIENTS];
-extern int clcnt;
-extern int top_id;
 
 
 int accept_client_connection(int *svsock, int *clsock, struct sockaddr_in *claddr, socklen_t *sockaddr_sz);

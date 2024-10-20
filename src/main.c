@@ -3,7 +3,6 @@
 
 #define THROTTLE_LAG 1
 
-int clcnt = 0;
 socklen_t SOCKADDR_SZ = sizeof(struct sockaddr_in);
 
 

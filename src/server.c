@@ -1,10 +1,39 @@
 #include "server.h"
 
 
-extern int clcnt;
-int top_id = -1;
 pthread_mutex_t cli_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+
+typedef enum {
+        GET,
+        INCREMENT,
+        DECREMENT
+} Mode;
+
+int
+op_clcnt(Mode mode)
+{
+        static int clcnt = 0;
+        int ret;
+        switch (mode) {
+                case GET:
+                        ret = clcnt;
+                case INCREMENT:
+                        ++clcnt;
+                        ret = -1;
+                case DECREMENT:
+                        --clcnt;
+                        ret = -1;
+        }
+        return ret;
+}
+
+int
+get_id_to_assign()
+{
+        static int topid = -1;
+        return ++topid;
+}
 
 int
 accept_client_connection(int *svsock, int *clsock, struct sockaddr_in *claddr, socklen_t *sockaddr_sz)
@@ -12,7 +41,7 @@ accept_client_connection(int *svsock, int *clsock, struct sockaddr_in *claddr, s
         if ((*clsock = accept(*svsock, (struct sockaddr*)claddr, (socklen_t*)sockaddr_sz)) < 0) {
                 perror("accept");
                 exit(EXIT_FAILURE);
-        } else if (clcnt >= MAX_CLIENTS) {
+        } else if (op_clcnt(GET) >= MAX_CLIENTS) {
                 close(*clsock);
                 *clsock = 0;
                 return -1;
@@ -26,12 +55,14 @@ add_client(struct sockaddr_in claddr, int clsock)
         Client *client = (Client *) malloc(sizeof(Client));
         client->addr = claddr;
         client->sock = clsock;
-        client->id = ++top_id;
+        client->id = get_id_to_assign();
 
         for (int i=0; i<MAX_CLIENTS; i++)
                 if (!clients[i]) {
                         clients[i] = client;
-                        ++clcnt;
+                        pthread_mutex_lock(&cli_mutex);
+                        op_clcnt(INCREMENT);
+                        pthread_mutex_unlock(&cli_mutex);
                         break;
                 }
         return client;
@@ -47,7 +78,7 @@ remove_client(Client *client)
         for (int i=0; i<MAX_CLIENTS; i++)
                 if (clients[i] && clients[i]->id == client->id) {
                         clients[i] = 0;
-                        --clcnt;
+                        op_clcnt(DECREMENT);
                         break;
                 }
         pthread_mutex_unlock(&cli_mutex);
