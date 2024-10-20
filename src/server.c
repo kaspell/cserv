@@ -9,14 +9,21 @@
 #include "server.h"
 
 
-pthread_mutex_t cli_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define BUFFER_OUT_SZ 1024
+#define BUFFER_IN_SZ 1024
+#define MAX_CLIENTS 128
+#define PORT 5000
+#define QUEUE_LENGTH 16
 
+static Client *clients[MAX_CLIENTS];
+pthread_mutex_t cli_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 typedef enum {
         GET,
         INCREMENT,
         DECREMENT
 } Mode;
+
 
 int
 manage_clcnt(Mode mode)
